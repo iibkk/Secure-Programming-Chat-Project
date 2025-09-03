@@ -1,2 +1,2 @@
-# Secure-Programming-Chat-Project
-Pending....
+# Secure-Programming-Protocol-Chat-Project
+Advanced Secure Protocol Design, Implementation and Review Assessment
