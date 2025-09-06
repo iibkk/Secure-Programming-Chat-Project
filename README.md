@@ -1,3 +1,1 @@
-# Secure-Programming-Protocol-Chat-Project
-
-Advanced Secure Protocol Design, Implementation and Review Assessment
+# Secure-Programming-Advanced-Secure-Protocol-Design-Implementation-and-Review-Project
