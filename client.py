@@ -101,10 +101,19 @@ class Client:
         if len(pt) > RSA_OAEP_SHA256_MAX_PT:
             print(f"message too long for RSA-4096 OAEP ({len(pt)} > {RSA_OAEP_SHA256_MAX_PT} bytes)"); return
         peer_pub = load_pub_from_b64u_pem(pub_b64u)
-        env = envelope("MSG_DIRECT", from_id=self.user_id, to_id=to_id, payload={})
+        
+        # Encrypt the message
         ct = rsa_encrypt_oaep(peer_pub, pt)
-        env["payload"] = payload_msg_direct(self.pub_b64u, b64u_encode(ct), "")
-        env["payload"]["content_sig"] = b64u_encode(rsa_sign_pss(self.priv, content_sig_material(env)))
+        ciphertext_b64u = b64u_encode(ct)
+        
+        # Create envelope with ciphertext but placeholder signature
+        env = envelope("MSG_DIRECT", from_id=self.user_id, to_id=to_id, 
+                    payload=payload_msg_direct(self.pub_b64u, ciphertext_b64u, ""))
+        
+        # Generate and set the content signature
+        content_sig = rsa_sign_pss(self.priv, content_sig_material(env))
+        env["payload"]["content_sig"] = b64u_encode(content_sig)
+        
         await ws.send(json.dumps(env, separators=(",",":")))
 
     async def _send_all(self, ws, text: str):

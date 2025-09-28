@@ -68,7 +68,16 @@ async def handler(ws, server_id, server_priv):
                     fail["sig"] = _transport_sign(server_priv, fail)
                     await ws.send(json.dumps(fail, separators=(",",":")))
                     continue
-                deliver = envelope("USER_DELIVER", from_id=sender, to_id=to, payload=msg["payload"])
+                
+                # FIXED: Preserve original timestamp when forwarding
+                deliver = {
+                    "type": "USER_DELIVER",
+                    "from": sender,
+                    "to": to,
+                    "ts_ms": msg["ts_ms"],  # Use original timestamp, not new one!
+                    "payload": msg["payload"],
+                    "sig": ""  # Will be filled by _transport_sign
+                }
                 deliver["sig"] = _transport_sign(server_priv, deliver)
                 await target_ws.send(json.dumps(deliver, separators=(",",":")))
             else:
