@@ -42,7 +42,6 @@ class Client:
 
             async def reader():
                 async for raw in ws:
-                    print(f"[DEBUG] Received: {raw}")
                     try:
                         msg = json.loads(raw)
                     except Exception:

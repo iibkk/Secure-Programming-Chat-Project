@@ -3,29 +3,35 @@ import json
 from pathlib import Path
 import sys
 
-# Add parent directory to path so we can import client
+# Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from client import Client
 
-# Monkey-patch to inject a replay
-original_on_deliver = Client._on_user_deliver
-
-async def patched_on_deliver(self, msg):
-    # Process message normally
-    await original_on_deliver(self, msg)
+class ReplayTestClient(Client):
+    """Client that automatically replays the first message it receives"""
     
-    # After 2 seconds, replay it automatically
-    await asyncio.sleep(2)
-    print("\n[TEST] Replaying the same message...")
-    await original_on_deliver(self, msg)
+    def __init__(self, url: str):
+        super().__init__(url)
+        self.first_message = None
+        self.replayed = False
+    
+    async def _on_user_deliver(self, msg: dict):
+        # Call the original handler
+        await super()._on_user_deliver(msg)
+        
+        # Store first message and replay it after a delay
+        if not self.first_message:
+            self.first_message = msg
+            print("\n[TEST] First message captured, will replay in 2 seconds...")
+            await asyncio.sleep(2)
+            print("[TEST] Now replaying the same message...\n")
+            await super()._on_user_deliver(msg)
+            self.replayed = True
 
-Client._on_user_deliver = patched_on_deliver
-
-# Run the client normally
 if __name__ == "__main__":
     import argparse
     ap = argparse.ArgumentParser()
     ap.add_argument("--url", default="ws://127.0.0.1:8765")
     args = ap.parse_args()
-    asyncio.run(Client(args.url).run())
+    asyncio.run(ReplayTestClient(args.url).run())
