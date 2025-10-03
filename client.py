@@ -17,8 +17,7 @@ from modules.formats import (
 KEYDIR = Path.home() / ".yourchat" / "client"
 USER_ID_FILE = KEYDIR / "user_id.txt"
 
-# Clean build: enable replay guard. In vuln branch set this to False.
-ENABLE_REPLAY_GUARD = True
+ENABLE_REPLAY_GUARD = False
 
 class Client:
     def __init__(self, url: str):
@@ -43,6 +42,7 @@ class Client:
 
             async def reader():
                 async for raw in ws:
+                    print(f"[DEBUG] Received: {raw}")
                     try:
                         msg = json.loads(raw)
                     except Exception:
@@ -102,15 +102,15 @@ class Client:
             print(f"message too long for RSA-4096 OAEP ({len(pt)} > {RSA_OAEP_SHA256_MAX_PT} bytes)"); return
         peer_pub = load_pub_from_b64u_pem(pub_b64u)
         
-        # Encrypt the message
+        # encrypt the message
         ct = rsa_encrypt_oaep(peer_pub, pt)
         ciphertext_b64u = b64u_encode(ct)
         
-        # Create envelope with ciphertext but placeholder signature
+        # create envelope with ciphertext but placeholder signature
         env = envelope("MSG_DIRECT", from_id=self.user_id, to_id=to_id, 
                     payload=payload_msg_direct(self.pub_b64u, ciphertext_b64u, ""))
         
-        # Generate and set the content signature
+        # generate and set the content signature
         content_sig = rsa_sign_pss(self.priv, content_sig_material(env))
         env["payload"]["content_sig"] = b64u_encode(content_sig)
         
@@ -131,7 +131,6 @@ class Client:
         mat = content_sig_material(msg)
         if not rsa_verify_pss(sender_pub, mat, b64u_decode(pay["content_sig"])):
             print("[WARN] bad content signature; dropped"); return
-        # replay guard (disable in vuln branch)
         if ENABLE_REPLAY_GUARD:
             from hashlib import sha256
             digest = sha256(mat).hexdigest()
