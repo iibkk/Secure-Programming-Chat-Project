@@ -2,7 +2,9 @@ import asyncio
 import json
 from pathlib import Path
 import sys
-sys.path.insert(0, str(Path(__file__).parent))
+
+# Add parent directory to path so we can import client
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from client import Client
 
