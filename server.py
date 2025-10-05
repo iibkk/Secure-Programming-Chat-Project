@@ -172,7 +172,7 @@ async def main(host: str, port: int):
         import uuid
         server_id = str(uuid.uuid4()); SERVER_ID_FILE.write_text(server_id)
 
-    async with websockets.serve(lambda ws, path: handler(ws, server_id, server_priv), host, port):
+    async with websockets.serve(lambda ws: handler(ws, server_id, server_priv), host, port):
         print(f"[server] {server_id} ws://{host}:{port}")
         await asyncio.Future()
 
