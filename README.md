@@ -1,7 +1,6 @@
 # Secure-Programming-Advanced-Secure-Protocol-Design-Implementation-and-Review-Project
 
 # Introduction
-This project is part of the **Advanced Secure Protocol Design, Implementation and Review** course.  
 The goal was to design and implement a secure chat protocol, test it, and reflect on its strengths and weaknesses.  
 
 This `README.md` describes the **clean (secure) build** of the system. A separate file, `README_VULN.md`, explains the intentionally vulnerable version we are submitting for peer review.
