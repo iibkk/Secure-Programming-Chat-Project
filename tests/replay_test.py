@@ -3,9 +3,9 @@ import json
 from pathlib import Path
 import sys
 
-# Add parent directory to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import config
 from client import Client
 
 class ReplayTestClient(Client):
@@ -17,10 +17,8 @@ class ReplayTestClient(Client):
         self.replayed = False
     
     async def _on_user_deliver(self, msg: dict):
-        # Call the original handler
         await super()._on_user_deliver(msg)
         
-        # Store first message and replay it after a delay
         if not self.first_message:
             self.first_message = msg
             print("\n[TEST] First message captured, will replay in 2 seconds...")
@@ -31,7 +29,17 @@ class ReplayTestClient(Client):
 
 if __name__ == "__main__":
     import argparse
+    
+    config.init_from_argv(sys.argv)
+    config.apply_to_crypto()
+    
     ap = argparse.ArgumentParser()
     ap.add_argument("--url", default="ws://127.0.0.1:8765")
+    ap.add_argument("--vuln", action="store_true", help="Run in vulnerable mode")
     args = ap.parse_args()
+    
+    print(f"[TEST MODE] Running in {'VULNERABLE' if config.IS_VULN else 'CLEAN'} mode")
+    print(f"[TEST MODE] Replay guard is {'DISABLED' if config.IS_VULN else 'ENABLED'}")
+    print()
+    
     asyncio.run(ReplayTestClient(args.url).run())

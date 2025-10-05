@@ -1,4 +1,3 @@
-# client.py
 from __future__ import annotations
 import asyncio, json, argparse, sys
 from pathlib import Path
@@ -7,17 +6,16 @@ import websockets
 from modules.crypto_rsa import (
     ensure_rsa_keypair, b64u_encode, b64u_decode, load_pub_from_b64u_pem,
     rsa_encrypt_oaep, rsa_decrypt_oaep, rsa_sign_pss, rsa_verify_pss,
-    new_uuid, canon, RSA_OAEP_SHA256_MAX_PT
+    new_uuid, canon, oaep_plaintext_limit_bytes
 )
 from modules.formats import (
     envelope, payload_user_hello, payload_list_req, payload_msg_direct, content_sig_material
 )
+import config
 
 # storage for the client
 KEYDIR = Path.home() / ".yourchat" / "client"
 USER_ID_FILE = KEYDIR / "user_id.txt"
-
-ENABLE_REPLAY_GUARD = False
 
 class Client:
     def __init__(self, url: str):
@@ -31,6 +29,8 @@ class Client:
         self.pub_b64u = b64u_encode(self.pub_pem)
         self.directory: dict[str, str] = {}  # user_id -> pub_b64u
         self.seen = set()
+        
+        self.enable_replay_guard = not config.IS_VULN
 
     async def run(self):
         async with websockets.connect(self.url) as ws:
@@ -97,9 +97,12 @@ class Client:
         if not pub_b64u:
             print("unknown user; run 'list'"); return
         pt = text.encode("utf-8")
-        if len(pt) > RSA_OAEP_SHA256_MAX_PT:
-            print(f"message too long for RSA-4096 OAEP ({len(pt)} > {RSA_OAEP_SHA256_MAX_PT} bytes)"); return
+        
+        # load peer public key and enforce per-key OAEP limit
         peer_pub = load_pub_from_b64u_pem(pub_b64u)
+        limit = oaep_plaintext_limit_bytes(peer_pub)
+        if len(pt) > limit:
+            print(f"message too long for RSA OAEP ({len(pt)} > {limit} bytes)"); return
         
         # encrypt the message
         ct = rsa_encrypt_oaep(peer_pub, pt)
@@ -130,12 +133,14 @@ class Client:
         mat = content_sig_material(msg)
         if not rsa_verify_pss(sender_pub, mat, b64u_decode(pay["content_sig"])):
             print("[WARN] bad content signature; dropped"); return
-        if ENABLE_REPLAY_GUARD:
+        
+        if self.enable_replay_guard:
             from hashlib import sha256
             digest = sha256(mat).hexdigest()
             if digest in self.seen:
                 print("[WARN] duplicate (replay) dropped"); return
             self.seen.add(digest)
+        
         try:
             pt = rsa_decrypt_oaep(self.priv, b64u_decode(pay["ciphertext"]))
         except Exception as e:
@@ -143,7 +148,12 @@ class Client:
         print(f"[dm {msg['from'][:8]}→you] {pt.decode('utf-8', errors='replace')}")
 
 if __name__ == "__main__":
+    config.init_from_argv(sys.argv)
+    config.apply_to_crypto()
+    
     ap = argparse.ArgumentParser()
     ap.add_argument("--url", default="ws://127.0.0.1:8765")
+    ap.add_argument("--vuln", action="store_true", help="Run in vulnerable mode")
     args = ap.parse_args()
+    
     asyncio.run(Client(args.url).run())
