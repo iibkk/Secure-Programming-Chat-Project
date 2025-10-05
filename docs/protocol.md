@@ -1,4 +1,4 @@
-# Wire Protocol (Clean Build)
+# Wire Protocol
 
 Envelope:
 ```json
