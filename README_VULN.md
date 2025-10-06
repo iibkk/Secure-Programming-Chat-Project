@@ -41,11 +41,12 @@ Other subtle flaws are left in place for reviewers to discover.
 
 ## Contact
 
-Name: Chenyu Duan
-Student ID: a1888643
-Email: a1888643@adelaide.edu.au
+- Name: Chenyu Duan / Luan Kafexholli / Gian Henley Willemse / Ibunkun Oluwajomiloju Adeoye / Jordan Riley Czyzowski
+- Student ID: a1888643 / a1884136 / a1897502 / a1877853 / a1853138
+- Email: a1888643@adelaide.edu.au / a1884136@adelaide.edu.au / a1897502@adelaide.edu.au / a1877853@adelaide.edu.au / a1853138@adelaide.edu.au
 
 ----
+
 
 
 
