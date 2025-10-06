@@ -53,8 +53,6 @@ Install (macOS/Linux)
 
 #####
 Starting the server (local machine)
-in .venv mode repeat this step: 
-    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 - Clean mode:
     python server.py --host 127.0.0.1 --port 8765
