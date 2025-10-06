@@ -16,13 +16,13 @@ python server.py --host 127.0.0.1 --port 8765
 
 ---
 
-# Start clients (in separate terminals)
+## Start clients (in separate terminals)
 python client.py --url ws://127.0.0.1:8765 --vuln
 python client.py --url ws://127.0.0.1:8765 --vuln
 
 ---
 
-# Commands available in the client:
+## Commands available in the client:
 
 list = see online users
 tell <user_id> <msg> = direct message
@@ -31,7 +31,7 @@ quit = exit
 
 ---
 
-# Known Vulnerabilities
+## Known Vulnerabilities
 
 Replay protection disabled: Duplicate messages are accepted.
 Weakened key validation: The client and server may accept weaker RSA keys.
@@ -39,13 +39,14 @@ Other subtle flaws are left in place for reviewers to discover.
 
 ---
 
-# Contact
+## Contact
 
 Name: Chenyu Duan
 Student ID: a1888643
 Email: a1888643@adelaide.edu.au
 
 ----
+
 
 
 
