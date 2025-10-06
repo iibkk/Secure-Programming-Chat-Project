@@ -182,9 +182,17 @@ if __name__ == "__main__":
     ap.add_argument("--port", type=int, default=8765)
     ap.add_argument("--rate-window", type=int, default=RATE_WINDOW_SECS)
     ap.add_argument("--rate-limit", type=int, default=RATE_LIMIT_MSGS)
+    ap.add_argument("--vuln", action="store_true", help="enable vulnerable mode")
     args = ap.parse_args()
 
     RATE_WINDOW_SECS = args.rate_window
     RATE_LIMIT_MSGS = args.rate_limit
+
+    import sys, config
+    config.init_from_argv(sys.argv)
+    if args.vuln:
+        config.IS_VULN = True
+    config.apply_to_crypto()
+    print(f"[mode] vulnerable={config.IS_VULN}")
 
     asyncio.run(main(args.host, args.port))

@@ -1,4 +1,3 @@
-# modules/crypto_rsa.py
 from __future__ import annotations
 
 import json, base64, uuid
@@ -9,10 +8,8 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.exceptions import InvalidSignature
 
-# =============================================================================
-# Base64url (no padding)
-# =============================================================================
 
+# Base64url
 def b64u_encode(b: bytes) -> str:
     """URL-safe base64 without = padding."""
     return base64.urlsafe_b64encode(b).rstrip(b"=").decode()
@@ -22,18 +19,12 @@ def b64u_decode(s: str) -> bytes:
     pad = "=" * (-len(s) % 4)
     return base64.urlsafe_b64decode(s + pad)
 
-# =============================================================================
 # Canonical JSON (sorted keys, compact) for signing
-# =============================================================================
-
 def canon(obj) -> bytes:
     """Deterministic JSON encoding for signatures/hashes."""
     return json.dumps(obj, separators=(",", ":"), sort_keys=True).encode("utf-8")
 
-# =============================================================================
 # RSA key management (on-disk identity)
-# =============================================================================
-
 def ensure_rsa_keypair(dirpath: Path, prefix: str) -> Tuple[rsa.RSAPrivateKey, bytes]:
     """
     Ensure a strong (4096-bit) RSA keypair exists at the given location.
@@ -98,9 +89,7 @@ def public_pem_to_b64u(pub) -> str:
 def new_uuid() -> str:
     return str(uuid.uuid4())
 
-# =============================================================================
 # RSA OAEP (SHA-256) and PSS (SHA-256)
-# =============================================================================
 
 def rsa_encrypt_oaep(peer_pub, plaintext: bytes) -> bytes:
     """Encrypt with RSAES-OAEP (SHA-256)."""
@@ -153,10 +142,8 @@ def oaep_plaintext_limit_bytes(pub) -> int:
     k = pub.key_size // 8
     return k - (2*32 + 2)
 
-# =============================================================================
-# Vulnerable build toggle (weak keys) and key-size policy
-# =============================================================================
 
+# Vulnerable build toggle (weak keys) and key-size policy
 # CLEAN build default: keep False. VULN build will set this True.
 VULN_WEAK_KEYS: bool = False
 
@@ -175,10 +162,8 @@ def is_valid_pubkey_len(pub) -> bool:
     min_bits = MIN_RSA_BITS_VULN if VULN_WEAK_KEYS else MIN_RSA_BITS_CLEAN
     return bits >= min_bits
 
-# =============================================================================
-# Content signature helpers (PSS over canonical JSON)
-# =============================================================================
 
+# Content signature helpers (PSS over canonical JSON)
 def content_sig_make(priv, obj) -> str:
     """
     Return base64url(signature) where signature = PSS-SHA256( canon(obj) ).
@@ -194,10 +179,8 @@ def content_sig_verify(pub, obj, sig_b64u: str) -> bool:
         return False
     return rsa_verify_pss(pub, canon(obj), sig)
 
-# =============================================================================
-# Self-test (run: python -m modules.crypto_rsa)
-# =============================================================================
 
+# Self-test (run: python -m modules.crypto_rsa)
 if __name__ == "__main__":
     from tempfile import TemporaryDirectory
 
