@@ -83,3 +83,18 @@ Replay guard is disabled → duplicate messages are accepted.
 Other subtle flaws are present, which reviewers are expected to detect.
 
 ---
+
+## Vulnerabilities Included
+
+Replay guard disabled: duplicate messages are accepted
+Weak key validation bypassed
+
+---
+
+## Contact
+
+- Name: Chenyu Duan / Luan Kafexholli / Gian Henley Willemse / Ibunkun Oluwajomiloju Adeoye / Jordan Riley Czyzowski
+- Student ID: a1888643 / a1884136 / a1897502 / a1877853 / a1853138
+- Email: a1888643@adelaide.edu.au / a1884136@adelaide.edu.au / a1897502@adelaide.edu.au / a1877853@adelaide.edu.au / a1853138@adelaide.edu.au
+
+---
